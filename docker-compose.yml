@@ -6,21 +6,31 @@ services:
         image: mysql:8.0
         container_name: community_db
         environment:
+            MYSQL_ROOT_PASSWORD: root_pass
             MYSQL_DATABASE: community_db
             MYSQL_USER: community_user
             MYSQL_PASSWORD: community_pass
-            MYSQL_ROOT_PASSWORD: root_pass
         volumes:
             - mysql_data:/var/lib/mysql
         ports:
-            - '3306:3306'
+            - '3307:3306'
         networks:
             - community_network
         healthcheck:
-            test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
-            interval: 5s
-            timeout: 10s
-            retries: 5
+            test:
+                [
+                    'CMD',
+                    'mysqladmin',
+                    'ping',
+                    '-h',
+                    'localhost',
+                    '-u',
+                    'root',
+                    '-proot_pass',
+                ]
+            interval: 10s
+            timeout: 30s
+            retries: 10
 
     # Django Backend Service
     backend:
@@ -32,6 +42,7 @@ services:
             db:
                 condition: service_healthy
         environment:
+            - DB_WAIT_TIMEOUT=60
             - DB_HOST=db
             - DB_NAME=community_db
             - DB_USER=community_user

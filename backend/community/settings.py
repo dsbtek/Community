@@ -98,7 +98,7 @@ DATABASES = {
         'USER': 'community_user',
         'PASSWORD': 'community_pass',
         'HOST': 'db',
-        'PORT': '3306',
+        'PORT': '3307',
     }
 }
 
