@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+    # MySQL Database Service
+    db:
+        image: mysql:8.0
+        container_name: community_db
+        environment:
+            MYSQL_DATABASE: community_db
+            MYSQL_USER: community_user
+            MYSQL_PASSWORD: community_pass
+            MYSQL_ROOT_PASSWORD: root_pass
+        volumes:
+            - mysql_data:/var/lib/mysql
+        ports:
+            - '3306:3306'
+        networks:
+            - community_network
+        healthcheck:
+            test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+            interval: 5s
+            timeout: 10s
+            retries: 5
+
+    # Django Backend Service
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        container_name: community_backend
+        depends_on:
+            db:
+                condition: service_healthy
+        environment:
+            - DB_HOST=db
+            - DB_NAME=community_db
+            - DB_USER=community_user
+            - DB_PASSWORD=community_pass
+            - SECRET_KEY=your-secret-key-here
+            - DEBUG=1
+        volumes:
+            - ./backend:/app
+        ports:
+            - '8000:8000'
+        networks:
+            - community_network
+        command: >
+            sh -c "python manage.py migrate &&
+                   python manage.py collectstatic --noinput &&
+                   gunicorn community.wsgi:application --bind 0.0.0.0:8000"
+
+    # React Frontend Service
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: community_frontend
+        environment:
+            - REACT_APP_API_BASE_URL=http://backend:8000/api
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        ports:
+            - '3000:3000'
+        networks:
+            - community_network
+        depends_on:
+            - backend
+        stdin_open: true
+        tty: true
+
+# Volumes and Networks
+volumes:
+    mysql_data:
+
+networks:
+    community_network:
+        driver: bridge
