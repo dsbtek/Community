@@ -1,0 +1,5 @@
+# This file is a placeholder to indicate nginx config files can be safely deleted.
+# You can now remove:
+#   - /home/dsbtek/Desktop/project/Community/nginx/nginx.conf
+#   - /home/dsbtek/Desktop/project/Community/frontend/nginx.conf
+# from your repository.
