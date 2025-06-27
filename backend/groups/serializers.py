@@ -6,12 +6,22 @@ User = get_user_model()
 
 
 class UserBasicSerializer(serializers.ModelSerializer):
-    """Basic user serializer for nested representations."""
-    
+    """Basic user serializer for nested representations, now with avatar fields."""
+    avatar = serializers.ImageField(read_only=True)
+    avatar_url = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'avatar', 'avatar_url']
         read_only_fields = ['id']
+
+    def get_avatar_url(self, obj):
+        request = self.context.get('request', None)
+        if obj.avatar:
+            if request is not None:
+                return request.build_absolute_uri(obj.avatar.url)
+            return obj.avatar.url
+        return None
 
 
 class GroupMembershipSerializer(serializers.ModelSerializer):

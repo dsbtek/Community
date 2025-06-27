@@ -32,7 +32,7 @@ class PostViewSet(viewsets.ModelViewSet):
         return PostSerializer
 
     def get_queryset(self):
-        """Filter posts based on query parameters."""
+        """Filter posts based on query parameters, including search."""
         queryset = super().get_queryset()
 
         # Filter by group
@@ -44,6 +44,19 @@ class PostViewSet(viewsets.ModelViewSet):
         author_id = self.request.query_params.get('author_id')
         if author_id:
             queryset = queryset.filter(author_id=author_id)
+
+        # Filter by 'mine' param (only posts by the logged-in user)
+        mine = self.request.query_params.get('mine')
+        if mine in ['1', 'true', 'True'] and self.request.user.is_authenticated:
+            queryset = queryset.filter(author=self.request.user)
+
+        # Search by title or content (case-insensitive)
+        search = self.request.query_params.get('search')
+        if search:
+            from django.db.models import Q
+            queryset = queryset.filter(
+                Q(title__icontains=search) | Q(content__icontains=search)
+            )
 
         return queryset.order_by('-created_at')
 

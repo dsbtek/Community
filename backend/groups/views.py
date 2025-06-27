@@ -4,12 +4,14 @@ from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 from .models import Group, GroupMembership
 from .serializers import (
     GroupSerializer, GroupListSerializer, GroupCreateSerializer,
     JoinGroupSerializer, GroupMembershipSerializer
 )
+
 
 class GroupViewSet(viewsets.ModelViewSet):
     """
@@ -28,17 +30,48 @@ class GroupViewSet(viewsets.ModelViewSet):
             return GroupCreateSerializer
         return GroupSerializer
 
+    def get_queryset(self):
+        """Filter groups based on query parameters, support search."""
+        queryset = super().get_queryset()
+
+        # Filter by 'mine' param (groups created by or joined by the logged-in user)
+        mine = self.request.query_params.get('mine')
+        user = self.request.user
+        if mine in ['1', 'true', 'True'] and user.is_authenticated:
+            queryset = queryset.filter(
+                (Q(creator=user) | Q(memberships__user=user))
+            ).distinct()
+
+        # Search by group name (case-insensitive)
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+
+        return queryset.order_by('-created_at')
+
     @swagger_auto_schema(
         operation_description="Get list of all groups",
         responses={200: GroupListSerializer(many=True)}
     )
     def list(self, request):
-        """List all groups"""
+        """List all groups with pagination, search, and count."""
         queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
+        # Pagination
+        limit = request.query_params.get('limit')
+        offset = request.query_params.get('offset')
+        try:
+            limit = int(limit) if limit is not None else 10
+            offset = int(offset) if offset is not None else 0
+        except ValueError:
+            limit = 10
+            offset = 0
+        total_count = queryset.count()
+        paginated = queryset[offset:offset+limit]
+        serializer = self.get_serializer(paginated, many=True)
         return Response({
             "message": "Groups retrieved successfully",
-            "groups": serializer.data
+            "groups": serializer.data,
+            "count": total_count
         })
 
     @swagger_auto_schema(
@@ -49,12 +82,20 @@ class GroupViewSet(viewsets.ModelViewSet):
         }
     )
     def retrieve(self, request, pk=None):
-        """Get group details by ID"""
+        """Get group details by ID, always include is_member and creator.id"""
         group = get_object_or_404(Group, pk=pk)
-        serializer = self.get_serializer(group)
+        serializer = self.get_serializer(group, context={'request': request})
+        data = serializer.data
+        # Ensure is_member and creator.id are present
+        if 'is_member' not in data:
+            data['is_member'] = False
+        if 'creator' not in data or not data['creator']:
+            data['creator'] = {'id': None}
+        elif 'id' not in data['creator']:
+            data['creator']['id'] = None
         return Response({
             "message": "Group retrieved successfully",
-            "group": serializer.data
+            "group": data
         })
 
     @swagger_auto_schema(
@@ -64,12 +105,14 @@ class GroupViewSet(viewsets.ModelViewSet):
     )
     def create(self, request):
         """Create a new group"""
+        print("Creating group with data:", request.data)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         group = serializer.save()
 
         # Return the created group with full details
-        response_serializer = GroupSerializer(group, context={'request': request})
+        response_serializer = GroupSerializer(
+            group, context={'request': request})
         return Response({
             "message": "Group created successfully",
             "group": response_serializer.data
@@ -114,7 +157,8 @@ class GroupViewSet(viewsets.ModelViewSet):
         group = get_object_or_404(Group, pk=pk)
 
         # Check if user is a member
-        membership = GroupMembership.objects.filter(group=group, user=request.user).first()
+        membership = GroupMembership.objects.filter(
+            group=group, user=request.user).first()
         if not membership:
             return Response({
                 "error": "You are not a member of this group"

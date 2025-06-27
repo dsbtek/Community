@@ -1,101 +1,113 @@
 services:
-  # MySQL Database
-  db:
-    image: mysql:8.0
-    container_name: community_db
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: community_db
-      MYSQL_USER: community_user
-      MYSQL_PASSWORD: community_password
-      MYSQL_ROOT_PASSWORD: root_password
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - community_network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+    # MySQL Database
+    db:
+        image: mysql:8.0
+        container_name: community_db
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: community_db
+            MYSQL_USER: community_user
+            MYSQL_PASSWORD: community_password
+            MYSQL_ROOT_PASSWORD: root_password
+        ports:
+            - '3307:3306'
+        volumes:
+            - mysql_data:/var/lib/mysql
+            - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+        networks:
+            - community_network
+        healthcheck:
+            test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+            timeout: 20s
+            retries: 10
 
-  # Django Backend
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: community_backend
-    restart: unless-stopped
-    ports:
-      - "8000:8000"
-    environment:
-      - DEBUG=1
-      - DB_HOST=db
-      - DB_NAME=community_db
-      - DB_USER=community_user
-      - DB_PASSWORD=community_password
-      - DB_PORT=3306
-    volumes:
-      - ./backend:/app
-      - backend_static:/app/static
-      - backend_media:/app/media
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - community_network
-    command: >
-      sh -c "python manage.py makemigrations &&
-             python manage.py migrate &&
-             python manage.py collectstatic --noinput &&
-             python manage.py runserver 0.0.0.0:8000"
+    # Django Backend
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        container_name: community_backend
+        restart: unless-stopped
+        ports:
+            - '8000:8000'
+        environment:
+            - DEBUG=1
+            - DB_HOST=db
+            - DB_NAME=community_db
+            - DB_USER=community_user
+            - DB_PASSWORD=community_password
+            - DB_PORT=3306
+        volumes:
+            - ./backend:/app
+            - backend_static:/app/static
+            - backend_media:/app/media
+        depends_on:
+            db:
+                condition: service_healthy
+        networks:
+            - community_network
+        command:
+            [
+                '/wait-for.sh',
+                'db',
+                '3306',
+                '--',
+                'sh',
+                '-c',
+                'python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000',
+            ]
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'http://localhost:8000/']
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
-  # React Frontend
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: community_frontend
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      - REACT_APP_API_URL=http://localhost:8000/api
-      - CHOKIDAR_USEPOLLING=true
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-    networks:
-      - community_network
-    stdin_open: true
-    tty: true
+    # React Frontend
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: community_frontend
+        restart: unless-stopped
+        ports:
+            - '3000:3000'
+        environment:
+            - REACT_APP_API_URL=http://localhost:8000/api
+            - CHOKIDAR_USEPOLLING=true
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        depends_on:
+            - backend
+        networks:
+            - community_network
+        stdin_open: true
+        tty: true
 
-  # Nginx (Optional - for production-like setup)
-  nginx:
-    image: nginx:alpine
-    container_name: community_nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - backend_static:/var/www/static
-      - backend_media:/var/www/media
-    depends_on:
-      - backend
-      - frontend
-    networks:
-      - community_network
+    # Nginx (Optional - for production-like setup)
+    nginx:
+        image: nginx:alpine
+        container_name: community_nginx
+        restart: unless-stopped
+        ports:
+            - '80:80'
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+            - backend_static:/var/www/static
+            - backend_media:/var/www/media
+        depends_on:
+            backend:
+                condition: service_healthy
+            frontend:
+                condition: service_started
+        networks:
+            - community_network
 
 volumes:
-  mysql_data:
-  backend_static:
-  backend_media:
+    mysql_data:
+    backend_static:
+    backend_media:
 
 networks:
-  community_network:
-    driver: bridge
+    community_network:
+        driver: bridge
