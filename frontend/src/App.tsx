@@ -19,14 +19,18 @@ import HomeHero from './components/home/HomeHero';
 import { useInfiniteScroll } from './utils/useInfiniteScroll';
 
 function App(): JSX.Element {
+    const [search, setSearch] = useState('');
     return (
         <AuthProvider>
             <Router>
-                <div className="min-h-screen bg-gray-100">
-                    <AppHeader />
-                    <main className="container mx-auto py-8">
+                <div className="min-h-screen flex flex-col bg-gray-100">
+                    <AppHeader search={search} setSearch={setSearch} />
+                    <main className="container mx-auto py-8 flex-1">
                         <Routes>
-                            <Route path="/" element={<Home />} />
+                            <Route
+                                path="/"
+                                element={<Home search={search} />}
+                            />
                             <Route path="/groups" element={<Groups />} />
                             <Route
                                 path="/groups/:id"
@@ -69,7 +73,13 @@ function App(): JSX.Element {
     );
 }
 
-function AppHeader(): JSX.Element {
+function AppHeader({
+    search,
+    setSearch,
+}: {
+    search: string;
+    setSearch: (v: string) => void;
+}): JSX.Element {
     const { user, logout, isAuthenticated } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const avatarRef = useRef<HTMLDivElement>(null);
@@ -96,7 +106,50 @@ function AppHeader(): JSX.Element {
     const avatarUrl =
         isAuthenticated && (user?.avatar_url || user?.avatar)
             ? user?.avatar_url || user?.avatar
-            : '/default-avatar.png';
+            : '/default-avatar.webp';
+    // Determine if avatar is active (menu open)
+    const avatarActive = menuOpen;
+    // Get current path for active nav item (use location from react-router)
+    const [pathname, setPathname] = useState(window.location.pathname);
+    useEffect(() => {
+        const updatePath = () => setPathname(window.location.pathname);
+        window.addEventListener('popstate', updatePath);
+        return () => window.removeEventListener('popstate', updatePath);
+    }, []);
+    // Also update on push/replace navigation
+    useEffect(() => {
+        const origPush = window.history.pushState;
+        const origReplace = window.history.replaceState;
+        function wrap(fn: typeof window.history.pushState) {
+            return function (
+                data: any,
+                unused: string,
+                url?: string | URL | null,
+            ) {
+                fn.call(window.history, data, unused, url);
+                setPathname(window.location.pathname);
+            };
+        }
+        window.history.pushState = wrap(origPush);
+        window.history.replaceState = wrap(origReplace);
+        return () => {
+            window.history.pushState = origPush;
+            window.history.replaceState = origReplace;
+        };
+    }, []);
+    const navLinks = [
+        { to: '/', label: 'Home', match: (p: string) => p === '/' },
+        {
+            to: '/groups',
+            label: 'Groups',
+            match: (p: string) => p === '/groups' || /^\/groups\//.test(p),
+        },
+        {
+            to: '/posts',
+            label: 'Posts',
+            match: (p: string) => p === '/posts' || /^\/posts\//.test(p),
+        },
+    ];
     return (
         <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7edf4] px-10 py-3 bg-white">
             <div className="flex items-center gap-8">
@@ -118,24 +171,22 @@ function AppHeader(): JSX.Element {
                     </h2>
                 </div>
                 <div className="flex items-center gap-9">
-                    <Link
-                        className="text-[#0d141c] text-sm font-medium leading-normal"
-                        to="/"
-                    >
-                        Home
-                    </Link>
-                    <Link
-                        className="text-[#0d141c] text-sm font-medium leading-normal"
-                        to="/groups"
-                    >
-                        Groups
-                    </Link>
-                    <Link
-                        className="text-[#0d141c] text-sm font-medium leading-normal"
-                        to="/posts"
-                    >
-                        Posts
-                    </Link>
+                    {navLinks.map((nav) => {
+                        const isActive = nav.match(pathname);
+                        return (
+                            <Link
+                                key={nav.to}
+                                className={`text-[#0d141c] text-sm font-medium leading-normal hover:text-blue-600 hover:bg-blue-50 rounded transition px-2 py-1 ${
+                                    isActive
+                                        ? 'bg-blue-100 text-blue-700 font-bold shadow-sm'
+                                        : ''
+                                }`}
+                                to={nav.to}
+                            >
+                                {nav.label}
+                            </Link>
+                        );
+                    })}
                 </div>
             </div>
             <div className="flex flex-1 justify-end gap-8 items-center">
@@ -159,6 +210,8 @@ function AppHeader(): JSX.Element {
                         </div>
                         <input
                             placeholder="Search"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
                             className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border-none bg-[#e7edf4] focus:border-none h-full placeholder:text-[#49739c] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal"
                         />
                     </div>
@@ -183,9 +236,20 @@ function AppHeader(): JSX.Element {
                 </button>
                 <div className="relative" ref={avatarRef}>
                     <div
-                        className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer border-2 border-blue-200 hover:border-blue-400 transition"
+                        className={[
+                            'bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer border-2 transition',
+                            avatarActive
+                                ? 'border-blue-600 ring-2 ring-blue-200'
+                                : 'border-blue-200 hover:border-blue-400',
+                        ].join(' ')}
                         style={{ backgroundImage: `url('${avatarUrl}')` }}
                         onClick={() => setMenuOpen((open) => !open)}
+                        aria-label="User menu"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ')
+                                setMenuOpen((open) => !open);
+                        }}
                     ></div>
                     {menuOpen && (
                         <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100">
@@ -225,17 +289,19 @@ function AppHeader(): JSX.Element {
     );
 }
 
-function Home(): JSX.Element {
+function Home({ search }: { search: string }): JSX.Element {
     const { isAuthenticated, tokens } = useAuth();
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [page, setPage] = useState<number>(1);
     const [hasMore, setHasMore] = useState<boolean>(true);
+    const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
 
     useEffect(() => {
+        setPage(1);
         fetchPosts(1, true);
         // eslint-disable-next-line
-    }, []);
+    }, [search]);
 
     const fetchPosts = async (pageNum = 1, reset = false): Promise<void> => {
         setLoading(true);
@@ -246,7 +312,10 @@ function Home(): JSX.Element {
             if (tokens?.access) {
                 headers['Authorization'] = `Bearer ${tokens.access}`;
             }
-            const response = await fetch(`/api/posts/?page=${pageNum}`, {
+            const params = new URLSearchParams();
+            params.append('page', String(pageNum));
+            if (search) params.append('search', search);
+            const response = await fetch(`/api/posts/?${params.toString()}`, {
                 headers,
             });
             const data: PostsResponse = await response.json();
@@ -255,7 +324,7 @@ function Home(): JSX.Element {
             } else {
                 setPosts((prev) => [...prev, ...(data.posts || [])]);
             }
-            setHasMore((data.posts?.length || 0) > 0);
+            setHasMore((data.posts?.length || 0) === 10); // assuming backend page size is 10
         } catch (error) {
             console.error('Error fetching posts:', error);
         } finally {
@@ -305,16 +374,34 @@ function Home(): JSX.Element {
         }
     };
 
+    const handleCreatePostClick = () => {
+        setShowCreateForm(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handlePostCreated = (newPost: Post): void => {
+        setPosts((prev) => [newPost, ...prev]);
+        setShowCreateForm(false);
+    };
+
     return (
         <div
-            className="relative min-h-screen flex flex-col bg-slate-50 group/design-root overflow-x-hidden"
+            className="relative min-h-screen flex flex-col bg-transparent group/design-root overflow-x-hidden"
             style={{ fontFamily: "Inter, 'Noto Sans', sans-serif" }}
         >
             <div className="flex h-full grow flex-col">
                 <div className="px-4 md:px-10 flex flex-1 justify-center py-5 gap-8">
                     <HomeSidebar />
                     <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
-                        <HomeHero />
+                        <HomeHero onCreatePostClick={handleCreatePostClick} />
+                        {showCreateForm && isAuthenticated && (
+                            <div className="mb-8" id="create-post">
+                                <CreatePostForm
+                                    onSuccess={handlePostCreated}
+                                    onCancel={() => setShowCreateForm(false)}
+                                />
+                            </div>
+                        )}
                         <div className="flex flex-wrap justify-between gap-3 p-4 mb-2">
                             <p className="text-[#0d141c] tracking-light text-[32px] font-bold leading-tight min-w-72">
                                 All Posts
@@ -397,7 +484,8 @@ function Groups(): JSX.Element {
     };
 
     const handleJoinGroup = async (groupId: number): Promise<void> => {
-        if (!isAuthenticated || !tokens?.access) return;
+        if (!isAuthenticated || !tokens || !tokens.access) return;
+
         try {
             const response = await fetch(`/api/groups/${groupId}/join/`, {
                 method: 'POST',
@@ -406,8 +494,11 @@ function Groups(): JSX.Element {
                     'Content-Type': 'application/json',
                 },
             });
+
             if (response.ok) {
                 fetchGroups();
+            } else {
+                console.error('Failed to join group:', await response.text());
             }
         } catch (error) {
             console.error('Error joining group:', error);

@@ -3,13 +3,17 @@ import { useParams } from 'react-router-dom';
 import { Group, Post, PostsResponse } from '../../types';
 import PostCard from '../posts/PostCard';
 import { useAuth } from '../../contexts/AuthContext';
+import EditGroupForm from './EditGroupForm';
 
 const GroupDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, tokens, user } = useAuth();
     const [group, setGroup] = useState<Group | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [showEdit, setShowEdit] = useState(false);
 
     useEffect(() => {
         fetchGroup();
@@ -18,10 +22,38 @@ const GroupDetail: React.FC = () => {
     }, [id]);
 
     const fetchGroup = async () => {
-        const res = await fetch(`/api/groups/${id}/`);
+        let headers: HeadersInit = {};
+        if (isAuthenticated && tokens?.access) {
+            headers['Authorization'] = `Bearer ${tokens.access}`;
+        }
+        const res = await fetch(`/api/groups/${id}/`, { headers });
         if (res.ok) {
             const data = await res.json();
             setGroup(data.group || data);
+        }
+    };
+    const handleLeaveGroup = async () => {
+        if (!isAuthenticated || !tokens?.access || !group) return;
+        setActionLoading(true);
+        setError(null);
+        try {
+            const res = await fetch(`/api/groups/${group.id}/leave/`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${tokens.access}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (res.ok) {
+                await fetchGroup();
+            } else {
+                const data = await res.json();
+                setError(data.error || 'Failed to leave group');
+            }
+        } catch (e) {
+            setError('Failed to leave group');
+        } finally {
+            setActionLoading(false);
         }
     };
 
@@ -46,9 +78,44 @@ const GroupDetail: React.FC = () => {
                 <p className="text-sm text-gray-500 mb-2">
                     Created: {new Date(group.created_at).toLocaleDateString()}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 mb-2">
                     Members: {group.members_count}
                 </p>
+                {/* Only group creator can edit */}
+                {isAuthenticated &&
+                    group.creator &&
+                    group.creator.id &&
+                    user &&
+                    group.creator.id === user.id && (
+                        <button
+                            onClick={() => setShowEdit((v) => !v)}
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded mt-2 mr-2"
+                        >
+                            {showEdit ? 'Cancel Edit' : 'Edit Group'}
+                        </button>
+                    )}
+                {showEdit && (
+                    <EditGroupForm
+                        group={group}
+                        onSuccess={(updated) => {
+                            setGroup(updated);
+                            setShowEdit(false);
+                        }}
+                        onCancel={() => setShowEdit(false)}
+                    />
+                )}
+                {isAuthenticated && group.is_member && (
+                    <button
+                        onClick={handleLeaveGroup}
+                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-2 disabled:opacity-60"
+                        disabled={actionLoading}
+                    >
+                        {actionLoading ? 'Leaving...' : 'Leave Group'}
+                    </button>
+                )}
+                {error && (
+                    <div className="text-red-600 mt-2 text-sm">{error}</div>
+                )}
             </div>
             <h3 className="text-xl font-semibold mb-4">Posts in this group</h3>
             <div className="space-y-6">
