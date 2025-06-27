@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app/
 
 # Copy wait-for script
-COPY wait-for.sh /wait-for.sh
+# COPY wait-for.sh /wait-for.sh
 RUN chmod +x /wait-for.sh
 
 # Create static and media directories
