@@ -4,12 +4,14 @@ from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 from .models import Group, GroupMembership
 from .serializers import (
     GroupSerializer, GroupListSerializer, GroupCreateSerializer,
     JoinGroupSerializer, GroupMembershipSerializer
 )
+
 
 class GroupViewSet(viewsets.ModelViewSet):
     """
@@ -27,6 +29,21 @@ class GroupViewSet(viewsets.ModelViewSet):
         elif self.action == 'create':
             return GroupCreateSerializer
         return GroupSerializer
+
+    def get_queryset(self):
+        """Filter groups based on query parameters."""
+        queryset = super().get_queryset()
+
+        # Filter by 'mine' param (groups created by or joined by the logged-in user)
+        mine = self.request.query_params.get('mine')
+        user = self.request.user
+        if mine in ['1', 'true', 'True'] and user.is_authenticated:
+            # Groups where user is creator or member
+            queryset = queryset.filter(
+                (Q(creator=user) | Q(memberships__user=user))
+            ).distinct()
+
+        return queryset.order_by('-created_at')
 
     @swagger_auto_schema(
         operation_description="Get list of all groups",
@@ -64,12 +81,14 @@ class GroupViewSet(viewsets.ModelViewSet):
     )
     def create(self, request):
         """Create a new group"""
+        print("Creating group with data:", request.data)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         group = serializer.save()
 
         # Return the created group with full details
-        response_serializer = GroupSerializer(group, context={'request': request})
+        response_serializer = GroupSerializer(
+            group, context={'request': request})
         return Response({
             "message": "Group created successfully",
             "group": response_serializer.data
@@ -114,7 +133,8 @@ class GroupViewSet(viewsets.ModelViewSet):
         group = get_object_or_404(Group, pk=pk)
 
         # Check if user is a member
-        membership = GroupMembership.objects.filter(group=group, user=request.user).first()
+        membership = GroupMembership.objects.filter(
+            group=group, user=request.user).first()
         if not membership:
             return Response({
                 "error": "You are not a member of this group"

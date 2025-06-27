@@ -45,6 +45,11 @@ class PostViewSet(viewsets.ModelViewSet):
         if author_id:
             queryset = queryset.filter(author_id=author_id)
 
+        # Filter by 'mine' param (only posts by the logged-in user)
+        mine = self.request.query_params.get('mine')
+        if mine in ['1', 'true', 'True'] and self.request.user.is_authenticated:
+            queryset = queryset.filter(author=self.request.user)
+
         return queryset.order_by('-created_at')
 
     @swagger_auto_schema(

@@ -78,6 +78,18 @@ class Post(models.Model):
         auto_now=True,
         help_text="When the post was last updated"
     )
+    image_url = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Optional image URL for the post"
+    )
+    image = models.ImageField(
+        upload_to='post_images/',
+        blank=True,
+        null=True,
+        help_text="Optional uploaded image for the post"
+    )
 
     class Meta:
         ordering = ['-created_at']

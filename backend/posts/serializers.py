@@ -42,14 +42,15 @@ class PostSerializer(serializers.ModelSerializer):
     comments_count = serializers.ReadOnlyField()
     is_liked = serializers.SerializerMethodField()
     comments = CommentSerializer(many=True, read_only=True)
+    image = serializers.ImageField(read_only=True)
     
     class Meta:
         model = Post
         fields = [
             'id', 'title', 'content', 'author', 'group', 'likes_count',
-            'comments_count', 'is_liked', 'comments', 'created_at', 'updated_at'
+            'comments_count', 'is_liked', 'comments', 'created_at', 'updated_at', 'image_url', 'image'
         ]
-        read_only_fields = ['id', 'author', 'group', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'author', 'group', 'created_at', 'updated_at', 'image', 'image_url']
 
     def get_is_liked(self, obj):
         """Check if the current user has liked this post."""
@@ -66,14 +67,15 @@ class PostListSerializer(serializers.ModelSerializer):
     likes_count = serializers.ReadOnlyField()
     comments_count = serializers.ReadOnlyField()
     is_liked = serializers.SerializerMethodField()
+    image = serializers.ImageField(read_only=True)
     
     class Meta:
         model = Post
         fields = [
             'id', 'title', 'content', 'author', 'group', 'likes_count',
-            'comments_count', 'is_liked', 'created_at'
+            'comments_count', 'is_liked', 'created_at', 'image_url', 'image'
         ]
-        read_only_fields = ['id', 'author', 'group', 'created_at']
+        read_only_fields = ['id', 'author', 'group', 'created_at', 'image', 'image_url']
 
     def get_is_liked(self, obj):
         """Check if the current user has liked this post."""
@@ -86,10 +88,11 @@ class PostListSerializer(serializers.ModelSerializer):
 class PostCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating new posts."""
     group_id = serializers.IntegerField(write_only=True)
+    image = serializers.ImageField(required=False, allow_null=True)
     
     class Meta:
         model = Post
-        fields = ['title', 'content', 'group_id']
+        fields = ['title', 'content', 'group_id', 'image']
 
     def validate_group_id(self, value):
         """Validate that the group exists and user is a member."""

@@ -7,10 +7,11 @@ User = get_user_model()
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password_confirm = serializers.CharField(write_only=True)
+    avatar = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'first_name', 'last_name', 'password', 'password_confirm')
+        fields = ('email', 'username', 'first_name', 'last_name', 'password', 'password_confirm', 'avatar')
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
@@ -24,7 +25,19 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(required=False, allow_null=True)
+    avatar_url = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'date_joined')
-        read_only_fields = ('id', 'date_joined')
+        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'date_joined', 'avatar', 'avatar_url')
+        read_only_fields = ('id', 'date_joined', 'avatar_url')
+
+    def get_avatar_url(self, obj):
+        request = self.context.get('request')
+        if obj.avatar and hasattr(obj.avatar, 'url'):
+            url = obj.avatar.url
+            if request is not None:
+                return request.build_absolute_uri(url)
+            return url
+        return None

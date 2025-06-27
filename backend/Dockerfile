@@ -13,6 +13,7 @@ RUN apt-get update \
         gcc \
         default-libmysqlclient-dev \
         pkg-config \
+        netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -21,6 +22,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project
 COPY . /app/
+
+# Copy wait-for script
+COPY wait-for.sh /wait-for.sh
+RUN chmod +x /wait-for.sh
 
 # Create static and media directories
 RUN mkdir -p /app/static /app/media

@@ -6,6 +6,8 @@ export interface User {
     first_name: string;
     last_name: string;
     date_joined: string;
+    avatar?: string | null; // Add avatar URL (optional)
+    avatar_url?: string | null; // Add avatar_url (optional)
 }
 
 export interface UserRegistration {
@@ -56,12 +58,15 @@ export interface Post {
     created_at: string;
     updated_at?: string;
     is_liked?: boolean;
+    image_url?: string;
+    image?: string; // Add image field for uploaded image
 }
 
 export interface PostCreate {
     title: string;
     content: string;
     group_id: number;
+    image_url?: string;
 }
 
 // API Response types
