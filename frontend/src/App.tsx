@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-// Use environment variable for backend URL
-const BACKEND_URL =
-    process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+import { getApiUrl } from './utils/getApiUrl';
 import {
     BrowserRouter as Router,
     Routes,
@@ -20,6 +18,7 @@ import { ProfilePage } from './components/profile';
 import HomeSidebar from './components/home/HomeSidebar';
 import HomeHero from './components/home/HomeHero';
 import { useInfiniteScroll } from './utils/useInfiniteScroll';
+const BACKEND_URL = getApiUrl('');
 
 function App(): JSX.Element {
     const [search, setSearch] = useState('');
