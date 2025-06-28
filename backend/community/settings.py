@@ -10,7 +10,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
-
+print(f"DEBUG mode is set to: {DEBUG}")
 ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -71,7 +71,7 @@ if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL)
     }
-elif config('DB_HOST', default=False) == False:
+elif config('DB_HOST', default=None):
     # Docker/Production with MySQL
     DATABASES = {
         'default': {
@@ -177,6 +177,7 @@ if not DEBUG:
         "https://community-7dofsvdo8-dsbteks-projects.vercel.app",
         "https://community-git-staging-dsbteks-projects.vercel.app",
         "https://community-ecru-kappa.vercel.app",
+        "http://localhost:3000"
     ] + [
         origin.strip().rstrip('/')
         for origin in os.getenv("FRONTEND_URL", "").split(',')
