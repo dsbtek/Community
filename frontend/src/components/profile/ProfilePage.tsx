@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getApiUrl } from '../../utils/getApiUrl';
+import { getMediaUrl } from '../../utils/getMediaUrl';
 import axiosInstance from '../../utils/axiosInstance';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -116,9 +117,11 @@ const ProfilePage: React.FC = () => {
                 <div className="relative">
                     <img
                         src={
-                            avatarPreview ||
-                            profile.avatar ||
-                            '/default-avatar.png'
+                            avatarPreview
+                                ? avatarPreview
+                                : profile.avatar
+                                ? getMediaUrl(profile.avatar)
+                                : '/default-avatar.png'
                         }
                         alt="Avatar"
                         className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"

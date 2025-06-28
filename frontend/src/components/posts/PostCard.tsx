@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Post, User, Group } from '../../types';
 import { timeAgo } from '../../utils/timeAgo';
+import { getMediaUrl } from '../../utils/getMediaUrl';
 
 interface PostCardProps {
     post: Post;
@@ -18,7 +19,9 @@ const PostCard: React.FC<PostCardProps> = ({
         typeof post.author === 'string' ? null : (post.author as User);
     const group = typeof post.group === 'string' ? null : (post.group as Group);
     const authorAvatar =
-        author?.avatar_url || author?.avatar || '/default-avatar.png';
+        author?.avatar_url || author?.avatar
+            ? getMediaUrl((author?.avatar_url || author?.avatar) ?? '')
+            : '/default-avatar.png';
     return (
         <div className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-200 p-6 border border-gray-100 group">
             <div className="flex items-start gap-4">
@@ -27,9 +30,9 @@ const PostCard: React.FC<PostCardProps> = ({
                     <div
                         className="w-40 h-32 bg-center bg-no-repeat bg-cover rounded-lg flex-shrink-0 border border-gray-200"
                         style={{
-                            backgroundImage: `url('${
-                                post.image || post.image_url
-                            }')`,
+                            backgroundImage: `url('${getMediaUrl(
+                                (post.image || post.image_url) ?? '',
+                            )}')`,
                         }}
                     ></div>
                 ) : (
