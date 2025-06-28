@@ -2,6 +2,8 @@ import axiosInstance from './utils/axiosInstance';
 import { getMediaUrl } from './utils/getMediaUrl';
 import React, { useState, useEffect, useRef } from 'react';
 import { getApiUrl } from './utils/getApiUrl';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
     BrowserRouter as Router,
     Routes,
@@ -71,6 +73,7 @@ function App(): JSX.Element {
                             </div>
                         </div>
                     </footer>
+                    <ToastContainer />
                 </div>
             </Router>
         </AuthProvider>
