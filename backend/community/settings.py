@@ -175,7 +175,7 @@ if not DEBUG:
     # Production CORS settings
     CORS_ALLOWED_ORIGINS = [
     origin.strip().rstrip('/')
-    for origin in os.getenv("FRONTEND_URL", "http://localhost:3000").split(',')
+    for origin in os.getenv("FRONTEND_URL", "FRONTEND_URL").split(',')
 ]
     CORS_ALLOW_CREDENTIALS = True
 
