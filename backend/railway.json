@@ -3,7 +3,7 @@
         "builder": "NIXPACKS"
     },
     "deploy": {
-        "startCommand": "bash -c 'python manage.py migrate && python manage.py collectstatic --noinput && uvicorn community.asgi:application --host 0.0.0.0 --port $PORT'",
+        "startCommand": "bash -c 'uvicorn community.asgi:application --host 0.0.0.0 --port $PORT'",
         "healthcheckPath": "/api/health",
         "healthcheckTimeout": 100,
         "restartPolicyType": "ON_FAILURE",
