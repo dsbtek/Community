@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { getApiUrl } from '../../utils/getApiUrl';
 import { Link } from 'react-router-dom';
 import { Group, GroupsResponse } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
@@ -38,9 +39,12 @@ const HomeSidebar: React.FC = () => {
             params.append('limit', String(pageSize));
             params.append('offset', String((page - 1) * pageSize));
             if (search) params.append('search', search);
-            const response = await fetch(`/api/groups/?${params.toString()}`, {
-                headers,
-            });
+            const response = await fetch(
+                getApiUrl(`/api/groups/?${params.toString()}`),
+                {
+                    headers,
+                },
+            );
             if (!response.ok) throw new Error('Failed to fetch groups');
             const data: GroupsResponse & { count?: number } =
                 await response.json();
@@ -65,7 +69,9 @@ const HomeSidebar: React.FC = () => {
             if (tokens?.access)
                 headers['Authorization'] = `Bearer ${tokens.access}`;
             // Adjust endpoint as per your backend
-            const response = await fetch('/api/users/suggested/', { headers });
+            const response = await fetch(getApiUrl('/api/users/suggested/'), {
+                headers,
+            });
             if (!response.ok) throw new Error('Failed to fetch users');
             const data = await response.json();
             setSuggestedUsers(data.users || []);
@@ -87,13 +93,16 @@ const HomeSidebar: React.FC = () => {
             return;
         }
         try {
-            const response = await fetch(`/api/groups/${groupId}/join/`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${tokens.access}`,
-                    'Content-Type': 'application/json',
+            const response = await fetch(
+                getApiUrl(`/api/groups/${groupId}/join/`),
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${tokens.access}`,
+                        'Content-Type': 'application/json',
+                    },
                 },
-            });
+            );
             if (response.ok) {
                 setGroups((prev) =>
                     prev.map((g) =>

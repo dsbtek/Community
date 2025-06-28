@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { getApiUrl } from './utils/getApiUrl';
 import {
     BrowserRouter as Router,
     Routes,
@@ -17,6 +18,7 @@ import { ProfilePage } from './components/profile';
 import HomeSidebar from './components/home/HomeSidebar';
 import HomeHero from './components/home/HomeHero';
 import { useInfiniteScroll } from './utils/useInfiniteScroll';
+const BACKEND_URL = getApiUrl('');
 
 function App(): JSX.Element {
     const [search, setSearch] = useState('');
@@ -49,7 +51,7 @@ function App(): JSX.Element {
                             </p>
                             <div className="mt-2 space-x-4">
                                 <a
-                                    href="http://localhost:8000/swagger/"
+                                    href={`${BACKEND_URL}/swagger/`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-blue-400 hover:text-blue-300"
@@ -57,7 +59,7 @@ function App(): JSX.Element {
                                     Swagger UI
                                 </a>
                                 <a
-                                    href="http://localhost:8000/redoc/"
+                                    href={`${BACKEND_URL}/redoc/`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-blue-400 hover:text-blue-300"

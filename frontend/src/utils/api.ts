@@ -1,4 +1,5 @@
 import { AuthTokens } from '../types';
+import { getApiUrl } from './getApiUrl';
 
 export class ApiError extends Error {
     constructor(message: string, public status: number, public data?: any) {
@@ -39,7 +40,7 @@ export const apiRequest = async <T>(
     }
 
     try {
-        const response = await fetch(url, requestOptions);
+        const response = await fetch(getApiUrl(url), requestOptions);
 
         if (!response.ok) {
             let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
