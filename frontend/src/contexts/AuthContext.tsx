@@ -6,6 +6,7 @@ import React, {
     ReactNode,
 } from 'react';
 import { getApiUrl } from '../utils/getApiUrl';
+import axiosInstance from '../utils/axiosInstance';
 import {
     User,
     AuthTokens,
@@ -98,23 +99,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const login = async (credentials: LoginCredentials): Promise<void> => {
         try {
-            const response = await fetch(getApiUrl('/api/auth/login/'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(credentials),
-            });
-
-            if (response.ok) {
-                const authTokens: AuthTokens = await response.json();
-                setTokens(authTokens);
-                localStorage.setItem('authTokens', JSON.stringify(authTokens));
-                await fetchUserProfile(authTokens.access);
-            } else {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Login failed');
-            }
+            const { data: authTokens } = await axiosInstance.post(
+                getApiUrl('/api/auth/login/'),
+                credentials,
+            );
+            setTokens(authTokens);
+            localStorage.setItem('authTokens', JSON.stringify(authTokens));
+            await fetchUserProfile(authTokens.access);
         } catch (error) {
             console.error('Login error:', error);
             throw error;
@@ -123,24 +114,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const register = async (userData: UserRegistration): Promise<void> => {
         try {
-            const response = await fetch(getApiUrl('/api/auth/register/'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(userData),
+            await axiosInstance.post(
+                getApiUrl('/api/auth/register/'),
+                userData,
+            );
+            // After successful registration, automatically log in
+            await login({
+                email: userData.email,
+                password: userData.password,
             });
-
-            if (response.ok) {
-                // After successful registration, automatically log in
-                await login({
-                    email: userData.email,
-                    password: userData.password,
-                });
-            } else {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Registration failed');
-            }
         } catch (error) {
             console.error('Registration error:', error);
             throw error;

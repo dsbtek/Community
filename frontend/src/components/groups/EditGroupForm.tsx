@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getApiUrl } from '../../utils/getApiUrl';
+import axiosInstance from '../../utils/axiosInstance';
 import { useAuth } from '../../contexts/AuthContext';
 import { Group } from '../../types';
 
@@ -31,18 +32,12 @@ const EditGroupForm: React.FC<EditGroupFormProps> = ({
             if (tokens?.access) {
                 headers['Authorization'] = `Bearer ${tokens.access}`;
             }
-            const res = await fetch(getApiUrl(`/api/groups/${group.id}/`), {
-                method: 'PUT',
-                headers,
-                body: JSON.stringify({ name, description }),
-            });
-            if (res.ok) {
-                const data = await res.json();
-                onSuccess(data.group || data);
-            } else {
-                const data = await res.json();
-                setError(data.error || data.detail || 'Failed to update group');
-            }
+            const { data } = await axiosInstance.put(
+                getApiUrl(`/api/groups/${group.id}/`),
+                { name, description },
+                { headers },
+            );
+            onSuccess(data.group || data);
         } catch (e) {
             setError('Failed to update group');
         } finally {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getApiUrl } from '../../utils/getApiUrl';
+import axiosInstance from '../../utils/axiosInstance';
 import { useAuth } from '../../contexts/AuthContext';
 import { GroupCreate } from '../../types';
 
@@ -38,24 +39,19 @@ const CreateGroupForm: React.FC<CreateGroupFormProps> = ({
         setError('');
 
         try {
-            const response = await fetch(getApiUrl('/api/groups/'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokens?.access}`,
+            const { data } = await axiosInstance.post(
+                getApiUrl('/api/groups/'),
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${tokens?.access}`,
+                    },
                 },
-                body: JSON.stringify(formData),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                onSuccess?.(data.group);
-                // Reset form
-                setFormData({ name: '', description: '' });
-            } else {
-                const errorData = await response.json();
-                setError(errorData.detail || 'Failed to create group');
-            }
+            );
+            onSuccess?.(data.group);
+            // Reset form
+            setFormData({ name: '', description: '' });
         } catch (err) {
             setError('Network error. Please try again.');
         } finally {

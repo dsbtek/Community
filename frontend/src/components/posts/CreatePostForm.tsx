@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getApiUrl } from '../../utils/getApiUrl';
+import axiosInstance from '../../utils/axiosInstance';
 import { useAuth } from '../../contexts/AuthContext';
 import { PostCreate, Group } from '../../types';
 
@@ -39,20 +40,19 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({
 
     const fetchUserGroups = async (): Promise<void> => {
         try {
-            const response = await fetch(getApiUrl('/api/groups/'), {
-                headers: {
-                    Authorization: `Bearer ${tokens?.access}`,
+            const { data } = await axiosInstance.get(
+                getApiUrl('/api/groups/'),
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens?.access}`,
+                    },
                 },
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                // Filter to only show groups where user is a member
-                const userGroups = data.groups.filter(
-                    (group: Group) => group.is_member,
-                );
-                setGroups(userGroups);
-            }
+            );
+            // Filter to only show groups where user is a member
+            const userGroups = data.groups.filter(
+                (group: Group) => group.is_member,
+            );
+            setGroups(userGroups);
         } catch (err) {
             console.error('Error fetching groups:', err);
         } finally {
