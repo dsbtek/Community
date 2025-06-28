@@ -174,6 +174,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 if not DEBUG:
     # Production CORS settings
     CORS_ALLOWED_ORIGINS = [
+        "https://community-7dofsvdo8-dsbteks-projects.vercel.app/",
+        "https://community-git-staging-dsbteks-projects.vercel.app/",
+        "https://community-ecru-kappa.vercel.app/",
     origin.strip().rstrip('/')
     for origin in os.getenv("FRONTEND_URL", "FRONTEND_URL").split(',')
 ]
