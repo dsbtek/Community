@@ -71,7 +71,7 @@ if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL)
     }
-elif config('DB_HOST', default=None):
+elif config('DB_HOST', default=False) == False:
     # Docker/Production with MySQL
     DATABASES = {
         'default': {
