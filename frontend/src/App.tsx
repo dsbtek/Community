@@ -1,4 +1,5 @@
 import axiosInstance from './utils/axiosInstance';
+import { getMediaUrl } from './utils/getMediaUrl';
 import React, { useState, useEffect, useRef } from 'react';
 import { getApiUrl } from './utils/getApiUrl';
 import {
@@ -108,7 +109,7 @@ function AppHeader({
 
     const avatarUrl =
         isAuthenticated && (user?.avatar_url || user?.avatar)
-            ? user?.avatar_url || user?.avatar
+            ? getMediaUrl((user?.avatar_url || user?.avatar) ?? '')
             : '/default-avatar.webp';
     // Determine if avatar is active (menu open)
     const avatarActive = menuOpen;
