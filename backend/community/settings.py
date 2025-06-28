@@ -10,7 +10,9 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
-print(f"DEBUG mode is set to: {DEBUG}")
+if __name__ == "__main__" or os.environ.get("RUN_MAIN") == "true":
+    print(f"DEBUG mode is set to: {DEBUG}")
+    print(f"SECURE_SSL_REDIRECT: {locals().get('SECURE_SSL_REDIRECT', 'Not set yet')}")
 ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -202,5 +204,9 @@ else:
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
     ]
     CORS_ALLOW_CREDENTIALS = True
+    # Ensure no SSL redirect in dev, especially with Uvicorn
+    SECURE_SSL_REDIRECT = False
