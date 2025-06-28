@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getApiUrl } from '../../utils/getApiUrl';
 import { useAuth } from '../../contexts/AuthContext';
 import { Group } from '../../types';
 
@@ -30,7 +31,7 @@ const EditGroupForm: React.FC<EditGroupFormProps> = ({
             if (tokens?.access) {
                 headers['Authorization'] = `Bearer ${tokens.access}`;
             }
-            const res = await fetch(`/api/groups/${group.id}/`, {
+            const res = await fetch(getApiUrl(`/api/groups/${group.id}/`), {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify({ name, description }),

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { getApiUrl } from '../../utils/getApiUrl';
 import { useParams } from 'react-router-dom';
 import { Group, Post, PostsResponse } from '../../types';
 import PostCard from '../posts/PostCard';
@@ -26,7 +27,7 @@ const GroupDetail: React.FC = () => {
         if (isAuthenticated && tokens?.access) {
             headers['Authorization'] = `Bearer ${tokens.access}`;
         }
-        const res = await fetch(`/api/groups/${id}/`, { headers });
+        const res = await fetch(getApiUrl(`/api/groups/${id}/`), { headers });
         if (res.ok) {
             const data = await res.json();
             setGroup(data.group || data);
@@ -37,13 +38,16 @@ const GroupDetail: React.FC = () => {
         setActionLoading(true);
         setError(null);
         try {
-            const res = await fetch(`/api/groups/${group.id}/leave/`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${tokens.access}`,
-                    'Content-Type': 'application/json',
+            const res = await fetch(
+                getApiUrl(`/api/groups/${group.id}/leave/`),
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${tokens.access}`,
+                        'Content-Type': 'application/json',
+                    },
                 },
-            });
+            );
             if (res.ok) {
                 await fetchGroup();
             } else {
@@ -58,7 +62,7 @@ const GroupDetail: React.FC = () => {
     };
 
     const fetchGroupPosts = async () => {
-        const res = await fetch(`/api/posts/?group_id=${id}`);
+        const res = await fetch(getApiUrl(`/api/posts/?group_id=${id}`));
         if (res.ok) {
             const data: PostsResponse = await res.json();
             setPosts(data.posts || []);

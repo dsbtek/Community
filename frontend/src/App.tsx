@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+// Use environment variable for backend URL
+const BACKEND_URL =
+    process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 import {
     BrowserRouter as Router,
     Routes,
@@ -49,7 +52,7 @@ function App(): JSX.Element {
                             </p>
                             <div className="mt-2 space-x-4">
                                 <a
-                                    href="http://localhost:8000/swagger/"
+                                    href={`${BACKEND_URL}/swagger/`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-blue-400 hover:text-blue-300"
@@ -57,7 +60,7 @@ function App(): JSX.Element {
                                     Swagger UI
                                 </a>
                                 <a
-                                    href="http://localhost:8000/redoc/"
+                                    href={`${BACKEND_URL}/redoc/`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-blue-400 hover:text-blue-300"

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getApiUrl } from '../../utils/getApiUrl';
 import { useAuth } from '../../contexts/AuthContext';
 import { PostCreate, Group } from '../../types';
 
@@ -38,7 +39,7 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({
 
     const fetchUserGroups = async (): Promise<void> => {
         try {
-            const response = await fetch('/api/groups/', {
+            const response = await fetch(getApiUrl('/api/groups/'), {
                 headers: {
                     Authorization: `Bearer ${tokens?.access}`,
                 },
@@ -100,7 +101,7 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({
             if (imageFile) {
                 form.append('image', imageFile);
             }
-            const response = await fetch('/api/posts/', {
+            const response = await fetch(getApiUrl('/api/posts/'), {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${tokens?.access}`,
