@@ -178,7 +178,6 @@ if not DEBUG:
         "https://community-7dofsvdo8-dsbteks-projects.vercel.app",
         "https://community-git-staging-dsbteks-projects.vercel.app",
         "https://community-ecru-kappa.vercel.app",
-        "http://localhost:3000"
     ] + [
         origin.strip().rstrip('/')
         for origin in os.getenv("FRONTEND_URL", "").split(',')
