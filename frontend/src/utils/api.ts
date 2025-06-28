@@ -1,5 +1,6 @@
 import { AuthTokens } from '../types';
 import { getApiUrl } from './getApiUrl';
+import axiosInstance from './axiosInstance';
 
 export class ApiError extends Error {
     constructor(message: string, public status: number, public data?: any) {
@@ -30,46 +31,35 @@ export const apiRequest = async <T>(
         requestHeaders['Authorization'] = `Bearer ${tokens.access}`;
     }
 
-    const requestOptions: RequestInit = {
+    let axiosConfig: any = {
+        url: getApiUrl(url),
         method,
         headers: requestHeaders,
     };
 
     if (body && method !== 'GET') {
-        requestOptions.body = JSON.stringify(body);
+        axiosConfig.data =
+            body instanceof FormData ? body : JSON.stringify(body);
+        if (body instanceof FormData) {
+            delete axiosConfig.headers['Content-Type'];
+        }
     }
 
     try {
-        const response = await fetch(getApiUrl(url), requestOptions);
-
-        if (!response.ok) {
-            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-            let errorData;
-
-            try {
-                errorData = await response.json();
-                errorMessage =
-                    errorData.detail || errorData.message || errorMessage;
-            } catch {
-                // If response is not JSON, use the status text
-            }
-
-            throw new ApiError(errorMessage, response.status, errorData);
+        const response = await axiosInstance(axiosConfig);
+        return response.data as T;
+    } catch (error: any) {
+        if (error.response) {
+            const errorMessage =
+                error.response.data?.detail ||
+                error.response.data?.message ||
+                `HTTP ${error.response.status}: ${error.response.statusText}`;
+            throw new ApiError(
+                errorMessage,
+                error.response.status,
+                error.response.data,
+            );
         }
-
-        // Handle empty responses
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            return await response.json();
-        } else {
-            return {} as T;
-        }
-    } catch (error) {
-        if (error instanceof ApiError) {
-            throw error;
-        }
-
-        // Network or other errors
         throw new ApiError(
             'Network error. Please check your connection and try again.',
             0,

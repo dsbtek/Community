@@ -1,3 +1,4 @@
+import axiosInstance from './utils/axiosInstance';
 import React, { useState, useEffect, useRef } from 'react';
 import { getApiUrl } from './utils/getApiUrl';
 import {
@@ -317,10 +318,10 @@ function Home({ search }: { search: string }): JSX.Element {
             const params = new URLSearchParams();
             params.append('page', String(pageNum));
             if (search) params.append('search', search);
-            const response = await fetch(`/api/posts/?${params.toString()}`, {
-                headers,
-            });
-            const data: PostsResponse = await response.json();
+            const { data } = await axiosInstance.get(
+                `/api/posts/?${params.toString()}`,
+                { headers },
+            );
             if (reset) {
                 setPosts(data.posts || []);
             } else {
@@ -349,28 +350,29 @@ function Home({ search }: { search: string }): JSX.Element {
     const handleLikePost = async (postId: number): Promise<void> => {
         if (!isAuthenticated || !tokens?.access) return;
         try {
-            const response = await fetch(`/api/posts/${postId}/like/`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${tokens.access}`,
-                    'Content-Type': 'application/json',
+            await axiosInstance.post(
+                `/api/posts/${postId}/like/`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens.access}`,
+                        'Content-Type': 'application/json',
+                    },
                 },
-            });
-            if (response.ok) {
-                setPosts((prev) =>
-                    prev.map((p) =>
-                        p.id === postId
-                            ? {
-                                  ...p,
-                                  is_liked: !p.is_liked,
-                                  likes_count: p.is_liked
-                                      ? p.likes_count - 1
-                                      : p.likes_count + 1,
-                              }
-                            : p,
-                    ),
-                );
-            }
+            );
+            setPosts((prev) =>
+                prev.map((p) =>
+                    p.id === postId
+                        ? {
+                              ...p,
+                              is_liked: !p.is_liked,
+                              likes_count: p.is_liked
+                                  ? p.likes_count - 1
+                                  : p.likes_count + 1,
+                          }
+                        : p,
+                ),
+            );
         } catch (error) {
             console.error('Error liking post:', error);
         }
@@ -470,8 +472,7 @@ function Groups(): JSX.Element {
             const url = isAuthenticated
                 ? '/api/groups/?mine=1'
                 : '/api/groups/';
-            const response = await fetch(url, { headers });
-            const data: GroupsResponse = await response.json();
+            const { data } = await axiosInstance.get(url, { headers });
             setGroupList(data.groups || []);
         } catch (error) {
             console.error('Error fetching groups:', error);
@@ -489,19 +490,17 @@ function Groups(): JSX.Element {
         if (!isAuthenticated || !tokens || !tokens.access) return;
 
         try {
-            const response = await fetch(`/api/groups/${groupId}/join/`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${tokens.access}`,
-                    'Content-Type': 'application/json',
+            await axiosInstance.post(
+                `/api/groups/${groupId}/join/`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens.access}`,
+                        'Content-Type': 'application/json',
+                    },
                 },
-            });
-
-            if (response.ok) {
-                fetchGroups();
-            } else {
-                console.error('Failed to join group:', await response.text());
-            }
+            );
+            fetchGroups();
         } catch (error) {
             console.error('Error joining group:', error);
         }
@@ -637,8 +636,7 @@ function Posts(): JSX.Element {
                 headers['Authorization'] = `Bearer ${tokens.access}`;
             }
             const url = isAuthenticated ? '/api/posts/?mine=1' : '/api/posts/';
-            const response = await fetch(url, { headers });
-            const data: PostsResponse = await response.json();
+            const { data } = await axiosInstance.get(url, { headers });
             setPostList(data.posts || []);
         } catch (error) {
             console.error('Error fetching posts:', error);
@@ -655,16 +653,17 @@ function Posts(): JSX.Element {
     const handleLikePost = async (postId: number): Promise<void> => {
         if (!isAuthenticated || !tokens?.access) return;
         try {
-            const response = await fetch(`/api/posts/${postId}/like/`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${tokens.access}`,
-                    'Content-Type': 'application/json',
+            await axiosInstance.post(
+                `/api/posts/${postId}/like/`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens.access}`,
+                        'Content-Type': 'application/json',
+                    },
                 },
-            });
-            if (response.ok) {
-                fetchPosts();
-            }
+            );
+            fetchPosts();
         } catch (error) {
             console.error('Error liking post:', error);
         }

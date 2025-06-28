@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getApiUrl } from '../../utils/getApiUrl';
+import axiosInstance from '../../utils/axiosInstance';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface ProfileData {
@@ -30,14 +31,15 @@ const ProfilePage: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(getApiUrl('/api/auth/profile/'), {
-                headers: {
-                    Authorization: `Bearer ${tokens?.access}`,
-                    'Content-Type': 'application/json',
+            const { data } = await axiosInstance.get(
+                getApiUrl('/api/auth/profile/'),
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens?.access}`,
+                        'Content-Type': 'application/json',
+                    },
                 },
-            });
-            if (!res.ok) throw new Error('Failed to fetch profile');
-            const data = await res.json();
+            );
             setProfile(data);
             setForm(data);
             setAvatarPreview(data.avatar || null);
@@ -79,13 +81,11 @@ const ProfilePage: React.FC = () => {
                 body = JSON.stringify(form);
                 headers['Content-Type'] = 'application/json';
             }
-            const res = await fetch(getApiUrl('/api/auth/profile/'), {
-                method: 'PUT',
-                headers,
+            const { data } = await axiosInstance.put(
+                getApiUrl('/api/auth/profile/'),
                 body,
-            } as any);
-            if (!res.ok) throw new Error('Failed to update profile');
-            const data = await res.json();
+                { headers },
+            );
             setProfile(data);
             setEditMode(false);
             setSuccess('Profile updated successfully!');

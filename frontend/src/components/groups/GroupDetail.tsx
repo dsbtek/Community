@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getApiUrl } from '../../utils/getApiUrl';
+import axiosInstance from '../../utils/axiosInstance';
 import { useParams } from 'react-router-dom';
 import { Group, Post, PostsResponse } from '../../types';
 import PostCard from '../posts/PostCard';
@@ -27,32 +28,31 @@ const GroupDetail: React.FC = () => {
         if (isAuthenticated && tokens?.access) {
             headers['Authorization'] = `Bearer ${tokens.access}`;
         }
-        const res = await fetch(getApiUrl(`/api/groups/${id}/`), { headers });
-        if (res.ok) {
-            const data = await res.json();
-            setGroup(data.group || data);
-        }
+        const { data } = await axiosInstance.get(
+            getApiUrl(`/api/groups/${id}/`),
+            { headers },
+        );
+        setGroup(data.group || data);
     };
     const handleLeaveGroup = async () => {
         if (!isAuthenticated || !tokens?.access || !group) return;
         setActionLoading(true);
         setError(null);
         try {
-            const res = await fetch(
-                getApiUrl(`/api/groups/${group.id}/leave/`),
-                {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${tokens.access}`,
-                        'Content-Type': 'application/json',
+            try {
+                await axiosInstance.post(
+                    getApiUrl(`/api/groups/${group.id}/leave/`),
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${tokens.access}`,
+                            'Content-Type': 'application/json',
+                        },
                     },
-                },
-            );
-            if (res.ok) {
+                );
                 await fetchGroup();
-            } else {
-                const data = await res.json();
-                setError(data.error || 'Failed to leave group');
+            } catch (e: any) {
+                setError(e.response?.data?.error || 'Failed to leave group');
             }
         } catch (e) {
             setError('Failed to leave group');
@@ -62,12 +62,14 @@ const GroupDetail: React.FC = () => {
     };
 
     const fetchGroupPosts = async () => {
-        const res = await fetch(getApiUrl(`/api/posts/?group_id=${id}`));
-        if (res.ok) {
-            const data: PostsResponse = await res.json();
+        try {
+            const { data } = await axiosInstance.get(
+                getApiUrl(`/api/posts/?group_id=${id}`),
+            );
             setPosts(data.posts || []);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     if (loading) return <div className="text-center py-12">Loading...</div>;
