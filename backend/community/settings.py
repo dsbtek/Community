@@ -174,8 +174,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 if not DEBUG:
     # Production CORS settings
     CORS_ALLOWED_ORIGINS = [
-        config('FRONTEND_URL', default='http://localhost:3000'),
-    ]
+    origin.strip().rstrip('/')
+    for origin in os.getenv("FRONTEND_URL", "http://localhost:3000").split(',')
+]
     CORS_ALLOW_CREDENTIALS = True
 
     # Static files with WhiteNoise
