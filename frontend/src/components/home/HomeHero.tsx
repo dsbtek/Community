@@ -9,32 +9,36 @@ interface HomeHeroProps {
 const HomeHero: React.FC<HomeHeroProps> = ({ onCreatePostClick }) => {
     const { isAuthenticated } = useAuth();
     return (
-        <div className="bg-gradient-to-r from-blue-100 to-blue-300 rounded-xl p-2 xs:p-4 sm:p-8 mb-8 flex flex-col md:flex-row items-center md:items-stretch justify-between shadow w-full max-w-full md:max-w-5xl mx-auto">
-            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">
+        <div className="bg-gradient-to-r from-blue-100 to-blue-300 rounded-xl p-4 sm:p-8 mb-8 flex flex-col md:flex-row items-center justify-between shadow w-full max-w-full md:max-w-5xl mx-auto">
+            <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left gap-2 md:gap-4">
+                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-1 md:mb-2">
                     Welcome to ConnectSphere!
                 </h1>
-                <p className="text-base sm:text-lg text-gray-700 mb-4 max-w-full sm:max-w-xl">
+                <p className="text-base md:text-lg text-gray-700 mb-2 md:mb-4 max-w-full md:max-w-xl">
                     Join groups, share your thoughts, and connect with
                     like-minded people. Discover trending topics and make your
                     voice heard!
                 </p>
-                {isAuthenticated ? (
-                    <button
-                        type="button"
-                        onClick={onCreatePostClick}
-                        className="inline-block bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition"
-                    >
-                        Create a Post
-                    </button>
-                ) : (
-                    <Link
-                        to="/auth"
-                        className="inline-block bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition"
-                    >
-                        Login to Create a Post
-                    </Link>
-                )}
+                <div className="flex flex-col xs:flex-row items-center gap-3 mt-2">
+                    {isAuthenticated ? (
+                        <button
+                            type="button"
+                            onClick={onCreatePostClick}
+                            className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+                        >
+                            Create a Post
+                        </button>
+                    ) : (
+                        <Link
+                            to="/auth"
+                            className="bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+                        >
+                            Login to Create a Post
+                        </Link>
+                    )}
+                </div>
+            </div>
+            <div className="mt-6 md:mt-0 md:ml-8 flex-shrink-0 flex justify-center items-center">
                 <img
                     src="/logo.webp"
                     alt="Community"

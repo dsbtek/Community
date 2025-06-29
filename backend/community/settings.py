@@ -35,9 +35,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Must be first
+    'community.middleware.SkipSSLRedirectForHealthCheckMiddleware',  # Custom: skip SSL redirect for /api/health
     'django.middleware.common.CommonMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'community.middleware.SkipSSLRedirectForHealthCheckMiddleware',  # Custom: skip SSL redirect for /api/health
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
