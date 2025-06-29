@@ -69,11 +69,11 @@ if config("mysql_db_ur", default=False, cast=bool):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': config('DB_NAME', default='community_db'),
-            'USER': config('DB_USER', default='community_user'),
-            'PASSWORD': config('DB_PASSWORD', default='community_password'),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='3306'),
+            'NAME': config('DB_NAME'),
+            'USER': config('DB_USER'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST'),
+            'PORT': config('DB_PORT'),
             'OPTIONS': {
                 'charset': 'utf8mb4',
             },
