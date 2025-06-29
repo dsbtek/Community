@@ -27,6 +27,17 @@ venv
 
 # testing
 /coverage
+/test-results
+*.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.pytest_cache/
+.tox/
+.cache/
+nosetests.xml
+testmon.dat
+.testmondata
 
 # production
 /build

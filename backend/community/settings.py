@@ -164,51 +164,55 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
-if DEBUG == False:
-    # Production CORS settings
-    CORS_ALLOWED_ORIGINS = [
-        "https://community-7dofsvdo8-dsbteks-projects.vercel.app",
-        "https://community-git-staging-dsbteks-projects.vercel.app",
-        "https://community-ecru-kappa.vercel.app",
-    ] + [
-        origin.strip().rstrip('/')
-        for origin in os.getenv("FRONTEND_URL", "").split(',')
-        if origin.strip()
-    ]
-    CORS_ALLOW_CREDENTIALS = True
+# if DEBUG == False:
+#     # Production CORS settings
+#     CORS_ALLOWED_ORIGINS = [
+#         "https://7068-2c0f-f5c0-56e-13e2-6daa-5ec6-4515-b1f4.ngrok-free.app",
+#         "https://community-7dofsvdo8-dsbteks-projects.vercel.app",
+#         "https://community-git-staging-dsbteks-projects.vercel.app",
+#         "https://community-ecru-kappa.vercel.app",
+#     ] + [
+#         origin.strip().rstrip('/')
+#         for origin in os.getenv("FRONTEND_URL", "").split(',')
+#         if origin.strip()
+#     ]
+#     CORS_ALLOW_CREDENTIALS = True
 
-    # Static files with WhiteNoise
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+#     # Static files with WhiteNoise
+#     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-    # Security settings
-    # SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_BROWSER_XSS_FILTER = True
-    X_FRAME_OPTIONS = 'DENY'
-else:
-    # Development CORS settings
-    CORS_ALLOW_ALL_ORIGINS = True
-    CORS_ALLOW_METHODS = (
-        'GET',
-        'POST',
-        'PUT',
-        'PATCH',
-        'DELETE',
-        'OPTIONS',
-    )
-    CORS_ALLOW_HEADERS = (
-        'accept',
-        'authorization',
-        'content-type',
-        'user-agent',
-        'x-frontend',
-        'x-requested-with',
-        'x-forwarded-proto',
-    )
-    CORS_ALLOW_CREDENTIALS = True
-    SECURE_SSL_REDIRECT = False
+#     # Security settings
+#     # SECURE_SSL_REDIRECT = True
+#     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+#     SECURE_HSTS_SECONDS = 31536000
+#     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+#     SECURE_HSTS_PRELOAD = True
+#     SECURE_CONTENT_TYPE_NOSNIFF = True
+#     SECURE_BROWSER_XSS_FILTER = True
+#     X_FRAME_OPTIONS = 'DENY'
+# else:
+    # Development/Ngrok/Vercel CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "https://community-7dofsvdo8-dsbteks-projects.vercel.app",  # Your Vercel frontend
+    "https://7068-2c0f-f5c0-56e-13e2-6daa-5ec6-4515-b1f4.ngrok-free.app",  # Your ngrok URL (replace with your current one if it changes)
+]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'authorization',
+    'content-type',
+    'user-agent',
+    'x-frontend',
+    'x-requested-with',
+    'x-forwarded-proto',
+]
+SECURE_SSL_REDIRECT = False
 
