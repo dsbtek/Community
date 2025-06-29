@@ -23,12 +23,12 @@ const PostCard: React.FC<PostCardProps> = ({
             ? getMediaUrl((author?.avatar_url || author?.avatar) ?? '')
             : '/default-avatar.png';
     return (
-        <div className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-200 p-6 border border-gray-100 group">
-            <div className="flex items-start gap-4">
+        <div className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-200 p-4 sm:p-6 border border-gray-100 group">
+            <div className="flex flex-col sm:flex-row items-start gap-4">
                 {/* Post image */}
                 {post.image || post.image_url ? (
                     <div
-                        className="w-40 h-32 bg-center bg-no-repeat bg-cover rounded-lg flex-shrink-0 border border-gray-200"
+                        className="w-full h-40 sm:w-40 sm:h-32 bg-center bg-no-repeat bg-cover rounded-lg flex-shrink-0 border border-gray-200"
                         style={{
                             backgroundImage: `url('${getMediaUrl(
                                 (post.image || post.image_url) ?? '',
@@ -36,7 +36,7 @@ const PostCard: React.FC<PostCardProps> = ({
                         }}
                     ></div>
                 ) : (
-                    <div className="w-40 h-32 flex items-center justify-center bg-gray-200 rounded-lg flex-shrink-0 border border-gray-200">
+                    <div className="w-full h-40 sm:w-40 sm:h-32 flex items-center justify-center bg-gray-200 rounded-lg flex-shrink-0 border border-gray-200">
                         <svg
                             className="w-12 h-12 text-gray-400"
                             fill="none"

@@ -1,6 +1,7 @@
 import { AuthTokens } from '../types';
 import { getApiUrl } from './getApiUrl';
 import axiosInstance from './axiosInstance';
+import { toast } from 'react-toastify';
 
 export class ApiError extends Error {
     constructor(message: string, public status: number, public data?: any) {
@@ -47,6 +48,12 @@ export const apiRequest = async <T>(
 
     try {
         const response = await axiosInstance(axiosConfig);
+        // Show a toast for successful POST/PUT/DELETE requests
+        if (['POST', 'PUT', 'DELETE'].includes(method.toUpperCase())) {
+            // Try to get a message from the response, fallback to generic
+            const msg = response.data?.message || 'Operation successful.';
+            toast.success(msg);
+        }
         return response.data as T;
     } catch (error: any) {
         if (error.response) {
@@ -54,12 +61,16 @@ export const apiRequest = async <T>(
                 error.response.data?.detail ||
                 error.response.data?.message ||
                 `HTTP ${error.response.status}: ${error.response.statusText}`;
+            toast.error(errorMessage);
             throw new ApiError(
                 errorMessage,
                 error.response.status,
                 error.response.data,
             );
         }
+        toast.error(
+            'Network error. Please check your connection and try again.',
+        );
         throw new ApiError(
             'Network error. Please check your connection and try again.',
             0,
