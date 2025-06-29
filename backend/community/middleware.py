@@ -5,12 +5,15 @@ class SkipSSLRedirectForHealthCheckMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # Only skip SSL redirect for /api/health
+        # Debug print all relevant values
+        print(f"[DEBUG] Middleware: path={request.path} is_secure={request.is_secure()} SECURE_SSL_REDIRECT={getattr(settings, 'SECURE_SSL_REDIRECT', False)}")
+        # Match both /api/health and /api/health/
         if (
             getattr(settings, 'SECURE_SSL_REDIRECT', False)
-            and request.path == "/api/health"
+            and request.path.rstrip('/') == "/api/health"
             and not request.is_secure()
         ):
+            print("[DEBUG] SkipSSLRedirectForHealthCheckMiddleware: Skipping SSL redirect for /api/health")
             # Serve the health check without redirecting
             return self.get_response(request)
         return self.get_response(request)
