@@ -1,0 +1,10 @@
+[phases.setup]
+nixPkgs = [
+  "pkg-config",
+  "mysql80",
+  "openssl",
+  "libffi",
+  "zlib",
+  "bzip2",
+  "xz"
+]
