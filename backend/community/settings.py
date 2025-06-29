@@ -10,9 +10,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
-if __name__ == "__main__" or os.environ.get("RUN_MAIN") == "true":
-    print(f"DEBUG mode is set to: {DEBUG}")
-    print(f"SECURE_SSL_REDIRECT: {locals().get('SECURE_SSL_REDIRECT', 'Not set yet')}")
+
 ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -67,9 +65,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'community.wsgi.application'
 
 # Database
-# Check for production database URL first (Heroku, Railway, Render)
-print(f"DATABASE_URL: {config('DB_NAME'), config('DB_USER'), config('DB_PASSWORD'), config('DB_HOST'), config('DB_PORT')}")
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
