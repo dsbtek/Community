@@ -66,7 +66,6 @@ WSGI_APPLICATION = 'community.wsgi.application'
 # Database
 # Check for production database URL first (Heroku, Railway, Render)
 if config("mysql_db_ur", default=False, cast=bool):
-    print("mysql connection")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -81,8 +80,6 @@ if config("mysql_db_ur", default=False, cast=bool):
         }
     }
 else:
-    print("sqlite3 connection")
-
     # Local development with SQLite
     DATABASES = {
         'default': {
