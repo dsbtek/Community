@@ -131,13 +131,6 @@ A full-stack web application for building communities, creating groups, and shar
 
 ---
 
-## Deployment
-
--   Use Docker or Railway for deployment (see `Dockerfile`, `Procfile`, and `railway.json` in backend/frontend).
--   Set production environment variables and configure allowed hosts/CORS in Django settings.
-
----
-
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
