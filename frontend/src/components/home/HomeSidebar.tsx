@@ -6,7 +6,7 @@ import { Group, GroupsResponse } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 
 const HomeSidebar: React.FC = () => {
-    const { isAuthenticated, tokens } = useAuth();
+    const { isAuthenticated, tokens, loading: authLoading } = useAuth();
     const [groups, setGroups] = useState<Group[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [joining, setJoining] = useState<{ [key: number]: boolean }>({});
@@ -23,10 +23,12 @@ const HomeSidebar: React.FC = () => {
     const [totalGroups, setTotalGroups] = useState<number>(0);
 
     useEffect(() => {
-        fetchTrendingGroups();
-        fetchSuggestedUsers();
+        if (!authLoading) {
+            fetchTrendingGroups();
+        }
+        // fetchSuggestedUsers();
         // eslint-disable-next-line
-    }, [page, search]);
+    }, [page, search, authLoading]);
 
     const fetchTrendingGroups = async () => {
         setLoading(true);
@@ -166,7 +168,7 @@ const HomeSidebar: React.FC = () => {
                                         <span className="ml-2 text-green-600 text-xs font-semibold">
                                             Member
                                         </span>
-                                    ) : (
+                                    ) : isAuthenticated ? (
                                         <button
                                             title="Join group"
                                             onClick={() => handleJoin(group.id)}
@@ -212,6 +214,14 @@ const HomeSidebar: React.FC = () => {
                                                 </svg>
                                             )}
                                         </button>
+                                    ) : (
+                                        <Link
+                                            to="/auth"
+                                            className="ml-2 text-blue-500 text-xs underline"
+                                            title="Login to join group"
+                                        >
+                                            Login to Join
+                                        </Link>
                                     )}
                                 </li>
                             ))}
@@ -252,39 +262,6 @@ const HomeSidebar: React.FC = () => {
                     </>
                 )}
             </div>
-            {/* <div className="bg-white rounded-xl shadow p-5">
-                <h4 className="font-bold text-lg mb-3 text-gray-800">
-                    Suggested Users
-                </h4>
-                {usersError && (
-                    <div className="text-red-500 text-xs mb-2">
-                        {usersError}
-                    </div>
-                )}
-                {usersLoading ? (
-                    <ul className="space-y-2">
-                        {[...Array(2)].map((_, i) => (
-                            <li
-                                key={i}
-                                className="bg-gray-200 h-4 w-32 rounded animate-pulse"
-                            />
-                        ))}
-                    </ul>
-                ) : (
-                    <ul className="space-y-2">
-                        {suggestedUsers.map((user) => (
-                            <li key={user.id} className="text-gray-700">
-                                {user.name}
-                            </li>
-                        ))}
-                        {suggestedUsers.length === 0 && (
-                            <li className="text-gray-400 text-sm">
-                                No suggestions.
-                            </li>
-                        )}
-                    </ul>
-                )}
-            </div> */}
         </aside>
     );
 };

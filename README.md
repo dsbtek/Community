@@ -1,14 +1,143 @@
-Please read the instructions below carefully.
-Objective
-Build a simplified Community App that allows users to register, create groups, and post content within those groups.Unauthenticated users should be able to view all posts, but only authenticated users can post or create groups.
-Features to Implement
-1. User Authentication
-Allow users to register and log in securely.Use token-based authentication.Store user details such as name, email, and password.
-2. Groups
-Authenticated users can create groups (e.g., name and description).Each group should be tied to the user who created it.
-3. Posts
-Authenticated users can create posts inside groups they created.Each post must be linked to a group and the user who posted it.
-4. Public Feed
-Unauthenticated users should be able to view a feed of all posts across all groups.Only logged-in users can create groups or post content.
-Tech Stack Requirements
-Backend: Django +  Django Rest FrameworkDatabase: MySQLFrontend: React + Tailwind CSS
+# Community App
+
+A full-stack web application for building communities, creating groups, and sharing posts. Built with Django (DRF) backend and React + Tailwind CSS frontend.
+
+---
+
+## Features
+
+-   User registration and login (JWT token-based authentication)
+-   Create and manage groups
+-   Create posts within groups
+-   Public feed: anyone can view all posts
+-   Only authenticated users can create groups or posts
+
+---
+
+## Tech Stack
+
+-   **Backend:** Django, Django Rest Framework
+-   **Database:** MySQL (or SQLite for development)
+-   **Frontend:** React, Tailwind CSS
+
+---
+
+## Prerequisites
+
+-   Python 3.8+
+-   Node.js 16+
+-   npm or yarn
+-   MySQL (for production) or SQLite (for development)
+
+---
+
+## Backend Setup (Django)
+
+1. **Clone the repository:**
+
+    ```bash
+    git clone <your-repo-url>
+    cd Community/backend
+    ```
+
+2. **Create a virtual environment and activate it:**
+
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+
+3. **Install dependencies:**
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. **Configure environment variables:**
+
+    - Copy `.env.example` to `.env` and set your database and secret key values.
+    - By default, SQLite is used for development. For MySQL, update `DATABASES` in `settings.py`.
+
+5. **Apply migrations:**
+
+    ```bash
+    python manage.py migrate
+    ```
+
+6. **Create a superuser (admin):**
+
+    ```bash
+    python manage.py createsuperuser
+    ```
+
+7. **Run the backend server:**
+    ```bash
+    python manage.py runserver
+    ```
+
+---
+
+## Frontend Setup (React)
+
+1. **Navigate to the frontend directory:**
+
+    ```bash
+    cd ../frontend
+    ```
+
+2. **Install dependencies:**
+
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
+
+3. **Start the frontend development server:**
+
+    ```bash
+    npm start
+    # or
+    yarn start
+    ```
+
+4. **Access the app:**
+    - Frontend: [http://localhost:3000](http://localhost:3000)
+    - Backend API: [http://localhost:8000](http://localhost:8000)
+
+---
+
+## Environment Variables
+
+-   **Backend:**
+    -   `.env` file for Django secret key, DB credentials, etc.
+-   **Frontend:**
+    -   See `src/utils/getApiUrl.ts` for API base URL config.
+
+---
+
+## Useful Commands
+
+-   Run backend tests:
+    ```bash
+    python manage.py test
+    ```
+-   Run frontend tests:
+    ```bash
+    npm test
+    # or
+    yarn test
+    ```
+
+---
+
+## Deployment
+
+-   Use Docker or Railway for deployment (see `Dockerfile`, `Procfile`, and `railway.json` in backend/frontend).
+-   Set production environment variables and configure allowed hosts/CORS in Django settings.
+
+---
+
+## License
+
+MIT License. See [LICENSE](LICENSE) for details.

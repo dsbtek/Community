@@ -70,7 +70,7 @@ function App(): JSX.Element {
                             </p>
                             <div className="mt-2 space-x-4">
                                 <a
-                                    href={`${BACKEND_URL}/swagger/`}
+                                    href={`${BACKEND_URL}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-blue-400 hover:text-blue-300"
@@ -84,6 +84,14 @@ function App(): JSX.Element {
                                     className="text-blue-400 hover:text-blue-300"
                                 >
                                     ReDoc
+                                </a>
+                                <a
+                                    href={`${BACKEND_URL}/admin/login/`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 hover:text-blue-300"
+                                >
+                                    Admin
                                 </a>
                             </div>
                         </div>
@@ -213,26 +221,26 @@ function AppHeader({
                     </div>
                 </div>
                 <div className="flex flex-col sm:flex-row flex-1 md:flex-none justify-end items-center gap-2 sm:gap-4 md:gap-8 w-full md:w-auto">
-                    <label className="flex flex-row w-full sm:w-auto min-w-0 sm:min-w-40 max-w-full sm:max-w-64">
-                        <div className="flex w-full flex-1 items-stretch rounded-lg h-full">
-                            <div className="text-[#49739c] flex border-none bg-[#e7edf4] items-center justify-center pl-4 rounded-l-lg border-r-0">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24px"
-                                    height="24px"
-                                    fill="currentColor"
-                                    viewBox="0 0 256 256"
-                                >
-                                    <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
-                                </svg>
-                            </div>
-                            <input
-                                placeholder="Search"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141c] focus:outline-0 focus:ring-0 border-none bg-[#e7edf4] focus:border-none h-full placeholder:text-[#49739c] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal"
-                            />
-                        </div>
+                    {/* Search Bar Refactored */}
+                    <label className="relative w-full sm:w-auto min-w-0 sm:min-w-56 max-w-full sm:max-w-80">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                fill="currentColor"
+                                viewBox="0 0 256 256"
+                                className="text-blue-400"
+                            >
+                                <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+                            </svg>
+                        </span>
+                        <input
+                            placeholder="Search Posts"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="block w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 bg-[#f5f8fa] text-[#0d141c] placeholder:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition text-base shadow-sm"
+                        />
                     </label>
                     <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-[#e7edf4] text-[#0d141c] gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
                         <div
@@ -311,34 +319,18 @@ function AppHeader({
 function Home({ search }: { search: string }): JSX.Element {
     const { isAuthenticated, tokens } = useAuth();
     const [posts, setPosts] = useState<Post[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [page, setPage] = useState<number>(1);
+    const [loading, setLoading] = useState<boolean>(false);
     const [hasMore, setHasMore] = useState<boolean>(true);
     const [showCreateForm, setShowCreateForm] = useState<boolean>(false);
-    const [lastNoResultTime, setLastNoResultTime] = useState<number | null>(
-        null,
-    );
-
-    useEffect(() => {
-        setPage(1);
-        setLastNoResultTime(null);
-        fetchPosts(1, true);
-        // eslint-disable-next-line
-    }, [search]);
+    const pageRef = useRef(1);
 
     const fetchPosts = async (pageNum = 1, reset = false): Promise<void> => {
-        // If last fetch returned no results, and it's been less than 30s, skip fetch
-        if (lastNoResultTime && Date.now() - lastNoResultTime < 30000) {
-            return;
-        }
+        if (loading) return; // Prevent concurrent loads
         setLoading(true);
         try {
-            const headers: HeadersInit = {
-                'Content-Type': 'application/json',
-            };
-            if (tokens?.access) {
+            const headers: HeadersInit = { 'Content-Type': 'application/json' };
+            if (tokens?.access)
                 headers['Authorization'] = `Bearer ${tokens.access}`;
-            }
             const params = new URLSearchParams();
             params.append('page', String(pageNum));
             if (search) params.append('search', search);
@@ -350,15 +342,21 @@ function Home({ search }: { search: string }): JSX.Element {
             if (reset) {
                 setPosts(postsReturned);
             } else {
-                setPosts((prev) => [...prev, ...postsReturned]);
+                setPosts((prev) => {
+                    const ids = new Set(prev.map((p) => p.id));
+                    return [
+                        ...prev,
+                        ...postsReturned.filter(
+                            (p: { id: number }) => !ids.has(p.id),
+                        ),
+                    ];
+                });
             }
-            setHasMore(postsReturned.length === 10);
-            if (postsReturned.length === 0) {
-                setLastNoResultTime(Date.now());
-            } else {
-                setLastNoResultTime(null);
-            }
+            // If less than a full page, no more posts
+            if (postsReturned.length < 10) setHasMore(false);
+            else setHasMore(true);
         } catch (error) {
+            setHasMore(false); // On error, stop further requests
             console.error('Error fetching posts:', error);
         } finally {
             setLoading(false);
@@ -366,18 +364,19 @@ function Home({ search }: { search: string }): JSX.Element {
     };
 
     const loadMore = () => {
-        if (!loading && hasMore) {
-            // If last fetch returned no results, and it's been less than 30s, skip fetch
-            if (lastNoResultTime && Date.now() - lastNoResultTime < 30000) {
-                return;
-            }
-            setPage((prev) => {
-                const next = prev + 1;
-                fetchPosts(next);
-                return next;
-            });
-        }
+        if (loading || !hasMore) return; // Prevent runaway calls
+        pageRef.current += 1;
+        fetchPosts(pageRef.current);
     };
+
+    // Reset on search
+    useEffect(() => {
+        setPosts([]);
+        setHasMore(true);
+        pageRef.current = 1;
+        fetchPosts(1, true);
+        // eslint-disable-next-line
+    }, [search]);
 
     const sentinelRef = useInfiniteScroll(loadMore, hasMore, loading);
 
