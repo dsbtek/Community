@@ -1,6 +1,7 @@
 # Community App
 
 A full-stack web application for building communities, creating groups, and sharing posts. Built with Django (DRF) backend and React + Tailwind CSS frontend.
+Site link: https://community-git-staging-dsbteks-projects.vercel.app/
 
 ---
 
