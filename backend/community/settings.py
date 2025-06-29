@@ -68,35 +68,21 @@ WSGI_APPLICATION = 'community.wsgi.application'
 
 # Database
 # Check for production database URL first (Heroku, Railway, Render)
-DATABASE_URL = config('DATABASE_URL', default=None)
-if DATABASE_URL:
-    # Production with PostgreSQL
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL)
+print(f"DATABASE_URL: {config('DB_NAME'), config('DB_USER'), config('DB_PASSWORD'), config('DB_HOST'), config('DB_PORT')}")
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT', cast=int, default=3306),
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        },
     }
-elif config('DB_HOST', default=None):
-    # Docker/Production with MySQL
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': config('DB_NAME', default='community_db'),
-            'USER': config('DB_USER', default='community_user'),
-            'PASSWORD': config('DB_PASSWORD', default='community_password'),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='3306'),
-            'OPTIONS': {
-                'charset': 'utf8mb4',
-            },
-        }
-    }
-else:
-    # Local development with SQLite
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
-    }
+}
 
 
 
